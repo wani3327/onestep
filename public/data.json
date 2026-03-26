@@ -1,0 +1,35 @@
+[
+    {
+        "name": "분쇄기",
+        "width": 3,
+        "height": 3,
+        "ports": [
+            {"x":0,"y":0,"type":"input"},
+            {"x":1,"y":0,"type":"input"},
+            {"x":2,"y":0,"type":"input"},
+            {"x":0,"y":2,"type":"output"},
+            {"x":1,"y":2,"type":"output"},
+            {"x":2,"y":2,"type":"output"}
+        ]
+    },
+    {
+        "name": "재배기",
+        "width": 5,
+        "height": 5,
+        "ports": [
+            {"x":0,"y":0,"type":"input"},
+            {"x":1,"y":0,"type":"input"},
+            {"x":2,"y":0,"type":"input"},
+            {"x":0,"y":2,"type":"output"},
+            {"x":1,"y":2,"type":"output"},
+            {"x":2,"y":2,"type":"output"}
+        ]
+    },
+    {
+        "name": "컨베이어",
+        "type": "conveyor",
+        "width": 1,
+        "height": 1,
+        "ports": []
+    }
+]
