@@ -313,20 +313,33 @@ export class Game {
         this.selectedPort = null;
     }
 
+    private deltaToDirection(dx: number, dy: number): number {
+        if (dx === 1) return 0;   // East
+        if (dy === -1) return 1;  // North
+        if (dx === -1) return 2;  // West
+        if (dy === 1) return 3;   // South
+        return 0;
+    }
+
     private placeConveyorsAlongPath(path: Coordinate[]) {
         const conveyorMachine = this.machines.find(m => m.type === 'conveyor');
         if (!conveyorMachine) return;
 
         const occupied = this.getOccupiedCells();
-        const pathCells = path.slice(1, path.length - 1); // fromExit..toEntry
         const placed = new Set<string>();
 
-        for (const p of pathCells) {
+        // path[0] = source port, path[path.length-1] = destination port
+        // conveyor cells are path[1..path.length-2]
+        for (let i = 1; i < path.length - 1; i++) {
+            const p = path[i];
             const key = `${p.x},${p.y}`;
             if (occupied.has(key)) continue;
             if (placed.has(key)) continue;
 
-            this.placedMachines.push({ machine: conveyorMachine, x: p.x, y: p.y, rotation: 0 });
+            const next = path[i + 1];
+            const rotation = this.deltaToDirection(next.x - p.x, next.y - p.y);
+
+            this.placedMachines.push({ machine: conveyorMachine, x: p.x, y: p.y, rotation });
             placed.add(key);
             occupied.add(key);
         }
@@ -340,6 +353,7 @@ export class Game {
             let { gx, gy } = this.getMouseGridPos();
 
             if (cx > this.canvas.width - this.paletteWidth) {
+                this.selectedPort = null;
                 this.handlePaletteClick(cy);
             } else {
                 if (e.button === 0 && this.heldMachines.length === 0) {
@@ -349,6 +363,9 @@ export class Game {
                         return;
                     }
                 }
+
+                // ignore destructive / place actions while in connect-conveyor mode
+                if (this.selectedPort) return;
 
                 if (e.button === 0 && this.heldMachines.length > 0) { // left click
                     this.placeMachine(gx, gy);
@@ -404,6 +421,7 @@ export class Game {
                 case 'escape':
                     this.heldMachines = [];
                     this.heldRotation = 0;
+                    this.selectedPort = null;
                     break;
             }
         });
@@ -591,6 +609,30 @@ export class Game {
         this.ctx.translate(centerX, centerY);
         this.ctx.rotate((rotation * Math.PI) / 2);
         this.ctx.translate(-centerX, -centerY);
+
+        if (machine.type === 'conveyor') {
+            // background tile
+            this.ctx.fillStyle = isGhost ? (canPlace ? '#335' : 'red') : '#333';
+            this.ctx.fillRect(x, y, this.gridSize, this.gridSize);
+            this.ctx.strokeStyle = '#666';
+            this.ctx.lineWidth = 1;
+            this.ctx.strokeRect(x, y, this.gridSize, this.gridSize);
+
+            // directional triangle pointing East (rotation handles orientation)
+            const cx = x + this.gridSize / 2;
+            const cy = y + this.gridSize / 2;
+            const r = this.gridSize * 0.28;
+            this.ctx.fillStyle = isGhost ? (canPlace ? 'rgba(255,200,50,0.8)' : 'rgba(255,100,100,0.8)') : 'orange';
+            this.ctx.beginPath();
+            this.ctx.moveTo(cx + r, cy);
+            this.ctx.lineTo(cx - r * 0.7, cy - r);
+            this.ctx.lineTo(cx - r * 0.7, cy + r);
+            this.ctx.closePath();
+            this.ctx.fill();
+
+            this.ctx.restore();
+            return;
+        }
 
         // draw rect
         this.ctx.fillStyle = isGhost ? (canPlace ? 'lightblue' : 'red') : 'gray';
