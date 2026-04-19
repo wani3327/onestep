@@ -545,42 +545,6 @@ export class Game {
         this.ctx.restore();
     }
 
-    private drawConnections() {
-        this.ctx.save();
-        this.ctx.translate(-this.cameraX * this.zoom, -this.cameraY * this.zoom);
-        this.ctx.scale(this.zoom, this.zoom);
-
-        this.ctx.strokeStyle = 'yellow';
-        this.ctx.lineWidth = 5;
-
-        for (const conn of this.connections) {
-            const points = conn.path.map(p => ({ x: p.x * this.gridSize + this.gridSize / 2, y: p.y * this.gridSize + this.gridSize / 2 }));
-            if (points.length < 2) continue;
-
-            this.ctx.beginPath();
-            this.ctx.moveTo(points[0].x, points[0].y);
-            for (let i = 1; i < points.length; i++) {
-                this.ctx.lineTo(points[i].x, points[i].y);
-            }
-            this.ctx.stroke();
-
-            // arrow head at the end
-            const last = points[points.length - 1];
-            const prev = points[points.length - 2];
-            const angle = Math.atan2(last.y - prev.y, last.x - prev.x);
-            const arrowSize = 6;
-            this.ctx.fillStyle = 'yellow';
-            this.ctx.beginPath();
-            this.ctx.moveTo(last.x, last.y);
-            this.ctx.lineTo(last.x - arrowSize * Math.cos(angle - Math.PI / 6), last.y - arrowSize * Math.sin(angle - Math.PI / 6));
-            this.ctx.lineTo(last.x - arrowSize * Math.cos(angle + Math.PI / 6), last.y - arrowSize * Math.sin(angle + Math.PI / 6));
-            this.ctx.closePath();
-            this.ctx.fill();
-        }
-
-        this.ctx.restore();
-    }
-
     private drawGhost() {
         if (this.heldMachines.length === 0) return;
 
@@ -693,7 +657,6 @@ export class Game {
         this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
 
         this.drawGrid();
-        this.drawConnections();
         this.drawPlacedMachines();
         this.drawGhost();
         this.drawPalette();
